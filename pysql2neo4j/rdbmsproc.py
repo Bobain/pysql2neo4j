@@ -17,7 +17,7 @@ from utils import listUnique, listSubtract, listFlatten
 from customexceptions import DBInsufficientPrivileges, DbNotFoundException
 from customexceptions import DBUnreadableException
 from datatypes import getHandler
-from configman import getSqlDbUri, TRANSFORM_LABEL, TRANSFORM_REL_TYPES
+from configman import getSqlDbUri, getSqlDbConfDict, TRANSFORM_LABEL, TRANSFORM_REL_TYPES
 from configman import LOG, DRY_RUN, MANY_TO_MANY_AS_RELATION
 from configman import REMOVE_REDUNDANT_FIELDS
 
@@ -33,10 +33,29 @@ class SqlDbInfo(object):
 
     def __init__(self):
         '''Constructor'''
-        sqldburi = getSqlDbUri()
-        connection, inspector = getTestedSQLDatabase(sqldburi)
-        self.connection = connection
-        self.inspector = inspector
+
+        # < Bobain's edit
+        # sqldburi = getSqlDbUri()
+        # connection, inspector = getTestedSQLDatabase(sqldburi)
+        # self.connection = connection
+        # self.inspector = inspector
+
+        # here we are skipping tests about psql db
+        d = getSqlDbConfDict()
+        dburi = 'postgresql://{}:{}@{}:{}/{}'.format(d["user"],
+                    d["password"],
+                    d["host"],
+                    d["port"],
+                    d["database"])
+        engine = create_engine(dburi)
+        self.connection = engine.connect()
+        self.connection.execute('set search_path to %s;' % d['schema'])
+        self.inspector = reflection.Inspector.from_engine(engine)
+
+        # > Bobain's edit
+
+
+
         if TRANSFORM_LABEL == 'capitalize':
             self.labelTransform = self.capitalize
         else:

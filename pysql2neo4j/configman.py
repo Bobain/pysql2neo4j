@@ -140,6 +140,13 @@ def getSqlDbUri():
     return url.URL(driver, username=user, password=password,
                    host=host, port=port, database=schema, query=query)
 
+def getSqlDbConfDict():
+    d = dict()
+    for k in ["driver", "host", "port", "schema", "database", "user"]:
+        d[k] = __config.get(__SQLDBSECTION, k)
+    d["password"] = os.getenv(__config.get(__SQLDBSECTION, "password_env"))
+    return d
+
 
 def __getGraphNetLoc():
     '''Get network location of a url from settings.ini.

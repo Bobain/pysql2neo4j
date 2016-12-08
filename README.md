@@ -1,5 +1,20 @@
 from : https://github.com/lycofron/pysql2neo4j
 
+#install Neo4j:
+
+wget -O - https://debian.neo4j.org/neotechnology.gpg.key | sudo apt-key add -
+echo 'deb http://debian.neo4j.org/repo stable/' | sudo tee /etc/apt/sources.list.d/neo4j.list
+sudo apt-get update
+sudo apt-get install neo4j
+
+sudo neo4j start
+
+visit http://localhost:7474
+
+####################################################################
+OLD README
+####################################################################
+
 # pysql2neo4j
 
 A script to automatically migrate relational databases to Neo4J.
