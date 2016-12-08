@@ -11,6 +11,13 @@ sudo neo4j start
 
 visit http://localhost:7474
 
+the schema selection does not work, you have to manually move it to public:
+psql -d stats
+DROP SCHEMA public CASCADE;
+ALTER SCHEMA ulule_extract RENAME TO public;
+\q
+
+
 ####################################################################
 OLD README
 ####################################################################

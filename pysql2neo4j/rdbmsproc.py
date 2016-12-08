@@ -8,7 +8,7 @@ import string
 from collections import OrderedDict
 from itertools import combinations
 
-from sqlalchemy import create_engine, MetaData, select
+from sqlalchemy import create_engine, select
 from sqlalchemy.engine import reflection
 from sqlalchemy import Table, Column, Integer
 
@@ -20,6 +20,7 @@ from datatypes import getHandler
 from configman import getSqlDbUri, getSqlDbConfDict, TRANSFORM_LABEL, TRANSFORM_REL_TYPES
 from configman import LOG, DRY_RUN, MANY_TO_MANY_AS_RELATION
 from configman import REMOVE_REDUNDANT_FIELDS
+from configman import getMetaData
 
 #Decide here what to do with relation types
 _transformRelTypes = lambda x: x
@@ -50,7 +51,10 @@ class SqlDbInfo(object):
         engine = create_engine(dburi)
         self.connection = engine.connect()
         self.connection.execute('set search_path to %s;' % d['schema'])
+        engine.execute('set search_path to %s;' % d['schema'])
         self.inspector = reflection.Inspector.from_engine(engine)
+        self.inspector.engine.execute('set search_path to %s;' % d['schema']) # This shit does not work, we'll hendle this manually'
+        # self.inspector.default_schema_name = d['schema']
 
         # > Bobain's edit
 
@@ -120,8 +124,8 @@ class TableInfo(object):
             - tableName: string'''
         #TODO: Check which definition is better (or use both)
         self.isManyToMany = self.isManyToManyLoose
-        meta = MetaData()
         self.sqlDb = sqlDb
+        meta = getMetaData()
         saTableMetadata = Table(tableName, meta)
         self.sqlDb.inspector.reflecttable(saTableMetadata, None)
         self.query = select([saTableMetadata])
@@ -360,7 +364,7 @@ def getTestedSQLDatabase(dburi, tryWrite=False):
         raise DbNotFoundException(ex, "Could not connect to SQL DB %s."
                                   % dburi)
     try:
-        meta = MetaData()
+        meta = getMetaData()
         meta.reflect(bind=engine)
         sampleTblName = insp.get_table_names()[0]
         sampleTbl = Table(sampleTblName, meta)
@@ -374,7 +378,7 @@ def getTestedSQLDatabase(dburi, tryWrite=False):
     if not DRY_RUN:
         if tryWrite:
             try:
-                md = MetaData()
+                md = getMetaData()
                 testTable = Table('example', md,
                                   Column('id', Integer, primary_key=True))
                 md.create_all(engine)

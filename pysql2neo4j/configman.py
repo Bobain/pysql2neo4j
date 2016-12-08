@@ -9,6 +9,7 @@ import logging
 import os.path
 from sqlalchemy.engine import url
 from urlparse import urlunparse
+import sqlalchemy
 from pysql2neo4j.utils import fixPath
 
 #meta-configuration
@@ -145,8 +146,11 @@ def getSqlDbConfDict():
     for k in ["driver", "host", "port", "schema", "database", "user"]:
         d[k] = __config.get(__SQLDBSECTION, k)
     d["password"] = os.getenv(__config.get(__SQLDBSECTION, "password_env"))
+    globals()['metadata'] = sqlalchemy.MetaData(schema=d['schema'])
     return d
 
+def getMetaData():
+    return globals()['metadata']
 
 def __getGraphNetLoc():
     '''Get network location of a url from settings.ini.
