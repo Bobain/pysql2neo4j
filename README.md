@@ -22,6 +22,26 @@ sudo neo4j start
 
 cheatsheet : https://neo4j.com/docs/cypher-refcard/current/
 
+To avoid the : WARNING: Max 1024 open files allowed, minimum of 40 000 recommended. See the Neo4j manual.
+I did : sudo vim /etc/security/limits.conf
+and added the following lines:
+root   soft    nofile  40000
+root   hard    nofile  40000
+
+neo4j   soft    nofile  40000
+neo4j   hard    nofile  40000
+
+tonigor   soft    nofile  40000
+tonigor   hard    nofile  40000
+
+performance tuning : https://neo4j.com/developer/guide-performance-tuning/
+du -hs /var/lib/neo4j/data/databases/graph.db -> 4.6 Gb
+so I chose (sudo vim /etc/neo4j/neo4j.conf):
+dbms.memory.heap.initial_size=4g
+dbms.memory.heap.max_size=12g
+dbms.memory.pagecache.size=7g
+
+
 TODO : make it work on a specified schema
 the schema selection does not work, you have to manually move it to public:
 psql -d stats
