@@ -45,7 +45,7 @@ CREATE (src)-[:%s%s]->(dest)"""
             if OFFLINE_MODE:
                 CYPHER_STREAM.write(statement)
             else:
-                self.graphDb.cypher.execute(statement)
+                self.graphDb.evaluate(statement)
 
     def importTableCsv(self, tableObj):
         '''Imports a table to Neo4j.'''
@@ -215,27 +215,30 @@ def getNodeSpec(labels, properties):
 
 def createNodeCypher(node):
     '''Returns a cypher statement to create a node '''
-    nodeSpec = getNodeSpec(node.labels, node.properties)
+    nodeSpec = getNodeSpec(node.labels(), node.properties)
     return "CREATE (a:%s)" % nodeSpec
 
 
 def createRelTablesCypher(rel):
     '''Returns a cypher statement to create a relationshipx
     between nodes that represent a table.'''
-    src = rel.start_node
-    dest = rel.end_node
-    srcMatchProps = {"__tablename": src.properties["__tablename"]}
-    destMatchProps = {"__tablename": dest.properties["__tablename"]}
-    nodeSpecSrc = getNodeSpec(rel.start_node.labels, srcMatchProps)
-    nodeSpecDest = getNodeSpec(rel.end_node.labels, destMatchProps)
-    propertiesString = string.join(["`%s`:'%s'" % p for p in \
-                                   rel.properties.items()], ",")
-    relSpec = rel.type
-    if propertiesString:
-        relSpec = relSpec + "{%s}" % propertiesString
-    return "MATCH (a:%s), (b:%s) CREATE (a)-[r:%s]->(b)" % (nodeSpecSrc, \
-                                                          nodeSpecDest, \
-                                                          relSpec)
+    # < Bobain's edit
+    # src = rel.start_node
+    # dest = rel.end_node
+    # srcMatchProps = {"__tablename": src.im_self.properties["__relationType"]}
+    # destMatchProps = {"__tablename": dest.im_self.properties["__relationType"]}
+    # nodeSpecSrc = getNodeSpec(rel.start_node.labels, srcMatchProps)
+    # nodeSpecDest = getNodeSpec(rel.end_node.labels, destMatchProps)
+    # propertiesString = string.join(["`%s`:'%s'" % p for p in \
+    #                                rel.properties.items()], ",")
+    # relSpec = rel.type
+    # if propertiesString:
+    #     relSpec = relSpec + "{%s}" % propertiesString
+    # return "MATCH (a:%s), (b:%s) CREATE (a)-[r:%s]->(b)" % (nodeSpecSrc, \
+    #                                                       nodeSpecDest, \
+    #                                                       relSpec)
+    return unicode("CREATE " + str(rel))
+    # >
 
 
 def createModelGraph(sqlDb, graphDb):
@@ -250,7 +253,12 @@ def createModelGraph(sqlDb, graphDb):
             for node in tableNodes.values():
                 CYPHER_STREAM.write(createNodeCypher(node))
         else:
-            graphDb.graphDb.create(*tableNodes.values())
+            # < Bobain's edit
+            # graphDb.graphDb.create(*tableNodes.values())
+            for node in tableNodes.values():
+                graphDb.graphDb.create(node)
+            # graphDb.graphDb.evaluate(createNodeCypher(node))
+            # >
     relations = list()
     for t in sqlDb.tableList:
         r = t.asRelInfo()
@@ -269,4 +277,8 @@ def createModelGraph(sqlDb, graphDb):
             for rel in relations:
                 CYPHER_STREAM.write(createRelTablesCypher(rel))
         else:
-            graphDb.graphDb.create(*relations)
+            # < Bobain's edit
+            # graphDb.graphDb.create(*relations)
+            for rel in relations:
+                graphDb.graphDb.create(rel)
+            # >

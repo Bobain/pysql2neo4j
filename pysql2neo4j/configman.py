@@ -12,6 +12,15 @@ from urlparse import urlunparse
 import sqlalchemy
 from pysql2neo4j.utils import fixPath
 
+# < Bobain's edit
+# HARDCODED strings replacements: tried to make it in settings.ini, but configParser makes it so complex...
+# I had some other string fields in really needed table so I had to face the problem described here :
+# https://github.com/neo4j/neo4j/issues/8472
+# solution I decided to implement is simply to replace some characters the same way for all strings
+# It will be incredibly slow: just tired with my experience of importing data into neo4j
+STR2REPLACE = {'"':'', "'":"", ",": ""}
+# > Bobain's edit
+
 #meta-configuration
 __CONFIGFILE = "settings.ini"
 __GLOBALSECTION = 'GLOBAL'
@@ -43,6 +52,20 @@ CSV_DIRECTORY = __config.get(__GLOBALSECTION, "csv_directory")
 
 if not os.path.isdir(CSV_DIRECTORY):
     raise IOError("CSV directory is invalid")
+
+# < Bobain's edit
+#Optional, list of tables to be exported from schema
+try:
+    TABLES2EXPORT = __config.get(__GLOBALSECTION, "tables_to_export")
+except ConfigParser.NoOptionError:
+    TABLES2EXPORT = None # means all ;)
+
+try:
+    SKIP_EXPORT = bool(__config.get(__GLOBALSECTION, "skip_export"))
+except ConfigParser.NoOptionError:
+    SKIP_EXPORT = False
+# >
+
 
 #Required, int
 CSV_ROW_LIMIT = __config.getint(__GLOBALSECTION, "csv_row_limit")

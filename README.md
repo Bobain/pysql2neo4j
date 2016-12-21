@@ -1,4 +1,8 @@
-from : https://github.com/lycofron/pysql2neo4j
+Export from Postgresql import in Neo4j
+QnD fixes from a dead repository : https://github.com/lycofron/pysql2neo4j
+(hence the non PEP 8, full camelCase code, whereas I hate it...)
+I've adapted this code to make it work with recent neo4j and py2neo version
+works only for postgresql
 
 #install Neo4j:
 
@@ -11,6 +15,14 @@ sudo neo4j start
 
 visit http://localhost:7474
 
+in case you need to start from scratch :
+sudo neo4j stop
+sudo rm -rf /var/lib/neo4j/data/databases/graph.db
+sudo neo4j start
+
+cheatsheet : https://neo4j.com/docs/cypher-refcard/current/
+
+TODO : make it work on a specified schema
 the schema selection does not work, you have to manually move it to public:
 psql -d stats
 DROP SCHEMA public CASCADE;

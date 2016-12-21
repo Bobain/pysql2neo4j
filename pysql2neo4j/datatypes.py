@@ -8,6 +8,10 @@ from sqlalchemy.sql import sqltypes
 from sqlalchemy.dialects import mysql, oracle, mssql, sybase, postgresql
 from utils import getUnixTime, getSubclassesDeep
 
+# < Bobain's edit : need to replace some characters in strings
+from configman import STR2REPLACE
+# >
+
 
 #NOTE: Feedback is needed for vendor-specific data types
 stringTypes = [sqltypes.String, oracle.base.ROWID, oracle.base.INTERVAL,
@@ -41,7 +45,9 @@ class sqlTypeHandler(object):
 
     @classmethod
     def expFunc(cls, x):
-        '''Export as-is'''
+        if STR2REPLACE is not None and x is not None and cls == sqlString:
+            for old_str, new_str in STR2REPLACE.iteritems():
+                x = x.replace(old_str, new_str)
         return x
 
     @classmethod

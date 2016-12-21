@@ -17,7 +17,7 @@ from utils import listUnique, listSubtract, listFlatten
 from customexceptions import DBInsufficientPrivileges, DbNotFoundException
 from customexceptions import DBUnreadableException
 from datatypes import getHandler
-from configman import getSqlDbUri, getSqlDbConfDict, TRANSFORM_LABEL, TRANSFORM_REL_TYPES
+from configman import getSqlDbUri, getSqlDbConfDict, TRANSFORM_LABEL, TRANSFORM_REL_TYPES, TABLES2EXPORT
 from configman import LOG, DRY_RUN, MANY_TO_MANY_AS_RELATION
 from configman import REMOVE_REDUNDANT_FIELDS
 from configman import getMetaData
@@ -64,9 +64,23 @@ class SqlDbInfo(object):
             self.labelTransform = self.capitalize
         else:
             self.labelTransform = self.noTransform
+        # < Bobain's edit : restrict to tables_to_export if a list has been provided
         allTables = {tableName: TableInfo(self, tableName) \
                      for tableName in self.inspector.get_table_names()}
-        self.tables = allTables
+        if TABLES2EXPORT is not None:
+            tables2export = dict()
+            for t in TABLES2EXPORT.split(","):
+                if t not in allTables:
+                    raise Exception("Could not find table : <%s> in specified schema. \n" % t +
+                                    "Here is the list of available tables : <%s> \n" % ",".join(allTables.keys()) +
+                                    "Please edit settings.ini to make tables_to_export " +
+                                    "a list included in the last one")
+                else:
+                    tables2export[t] = allTables[t]
+        else:
+            tables2export = allTables
+        # > Bobain's edit
+        self.tables = tables2export
         #Processes below will behave as intended only after all tables
         #have been instantiated
         for tableObject in self.tables.values():

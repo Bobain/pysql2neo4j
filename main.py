@@ -6,7 +6,13 @@ Created on 24 Apr 2013
 
 from pysql2neo4j.rdbmsproc import SqlDbInfo
 from pysql2neo4j.graph import GraphProc, createModelGraph
-from pysql2neo4j.configman import LOG, DRY_RUN, OFFLINE_MODE
+from pysql2neo4j.configman import LOG, DRY_RUN, OFFLINE_MODE, SKIP_EXPORT, CSV_DIRECTORY
+
+# < Bobain's edit
+import dill
+import os
+TABLES_PICKLE_FILE = os.path.join(CSV_DIRECTORY, "sqldbTables.p")
+# >
 
 if __name__ == '__main__':
     #Step 0: Initialize
@@ -19,9 +25,24 @@ if __name__ == '__main__':
     graphDb = GraphProc()
 
     #Step 1: Export tables as csv files
-    sqlDb.export()
-
-    LOG.info("\nFinished export.\n\nStarting import...")
+    if not SKIP_EXPORT:
+        sqlDb.export()
+        temp = {'c': sqlDb.connection, 'i': sqlDb.inspector}
+        sqlDb.connection = None
+        sqlDb.inspector = None
+        with open(TABLES_PICKLE_FILE, 'wb') as outfile:
+            dill.dump(sqlDb, outfile)
+        sqlDb.connection = temp['c']
+        sqlDb.inspector = temp['i']
+        LOG.info("\nFinished export.\n\nStarting import...")
+    else:
+        conn = sqlDb.connection
+        inspector = sqlDb.inspector
+        with open(TABLES_PICKLE_FILE, 'rb') as infile:
+            sqlDb = dill.load(infile)
+        sqlDb.connection = conn
+        sqlDb.inspector = inspector
+        LOG.info("\nSkipping export.\n\nStarting import...")
 
     #Step 2: Import Nodes
     for t in sqlDb.tableList:
