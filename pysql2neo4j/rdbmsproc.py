@@ -346,7 +346,14 @@ class ForeignKeyInfo(object):
         self.refCols = OrderedDict()
         for colName in fKeyConstr['referred_columns']:
             self.refCols[colName] = self.refTable.cols[colName]
-        relType = "%s_%s" % (self.refTable.labelName, self.table.labelName)
+        # < Bobain's edit : very specific to the way I name tables and ids : like users.user_id
+        assert len(fKeyConstr['constrained_columns']) == 1, "Sorry no idea what to do about this"
+        if fKeyConstr['referred_table'][:-1] == fKeyConstr['constrained_columns'][0].replace('_id', ''):
+            relType = "%s_%s" % (self.refTable.labelName, self.table.labelName)
+        else:
+            relType = fKeyConstr['constrained_columns'][0].replace('_id', '')
+            # >
+        # relType = "%s_%s" % (self.refTable.labelName, self.table.labelName)
         self.relType = _transformRelTypes(relType)
 
     def asRelInfo(self):
