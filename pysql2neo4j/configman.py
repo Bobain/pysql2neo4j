@@ -19,10 +19,12 @@ from pysql2neo4j.utils import fixPath
 # solution I decided to implement is simply to replace some characters the same way for all strings
 # It will be incredibly slow: just tired with my experience of importing data into neo4j
 STR2REPLACE = {'"':'', "'":"", ",": ""}
+
+# meta-configuration
+__CONFIGFILE = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../settings.ini")
 # > Bobain's edit
 
-#meta-configuration
-__CONFIGFILE = "settings.ini"
+
 __GLOBALSECTION = 'GLOBAL'
 __SQLDBSECTION = 'SQL_DB'
 __GRAPHDBSECTION = 'GRAPH_DB'

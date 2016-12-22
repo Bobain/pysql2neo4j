@@ -1,0 +1,18 @@
+#!/bin/sh
+
+# stop if error
+set -e
+
+
+echo "Cleaning neo4j database"
+sudo neo4j stop
+sudo rm -rf /var/lib/neo4j/data/databases/graph.db
+sudo neo4j start
+echo "Waiting for neo4j to be ready"
+sleep 5
+
+echo "Exporting from postgresql to neo4j"
+~/anaconda2/bin/python ../main.py
+
+echo "running cypher scripts"
+~/anaconda2/bin/python ../match.py
