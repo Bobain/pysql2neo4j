@@ -37,9 +37,12 @@ tonigor   hard    nofile  40000
 performance tuning : https://neo4j.com/developer/guide-performance-tuning/
 du -hs /var/lib/neo4j/data/databases/graph.db -> 4.6 Gb
 so I chose (sudo vim /etc/neo4j/neo4j.conf):
-dbms.memory.heap.initial_size=4g
-dbms.memory.heap.max_size=12g
-dbms.memory.pagecache.size=7g
+dbms.memory.heap.initial_size=???g
+dbms.memory.heap.max_size=???g
+dbms.memory.pagecache.size=???g
+
+set the password on a server wihtout remote browser connection:
+curl -H "Content-Type: application/json" -X POST -d '{"password":"Neo4j"}' -u neo4j:neo4j http://localhost:7474/user/neo4j/password
 
 
 TODO : make it work on a specified schema
